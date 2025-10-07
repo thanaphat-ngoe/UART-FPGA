@@ -43,8 +43,11 @@ always @(posedge Clk) begin
     if (RstB == 1'b1) begin
         rBaudCnt <= cbaudCnt;
     end else if (rState == stWtEnd) begin
-        if (rBaudCnt == 10'd1) rBaudCnt <= cbaudCnt;
-        else rBaudCnt <= rBaudCnt - 10'd1;
+        if (rBaudCnt == 10'd1) begin
+            rBaudCnt <= cbaudCnt;
+        end else begin 
+            brBaudCnt <= rBaudCnt - 10'd1;
+        end
     end
 end
 
@@ -97,12 +100,19 @@ always @(posedge Clk) begin
                 rState <= stWtData;
             end
             stWtData: begin
-                if (rTxFfRdEn[1] == 1'b1) rState <= stWtEnd;
-                else rState <= stWtData;
+                if (rTxFfRdEn[1] == 1'b1) begin
+                    rState <= stWtEnd;
+                end else begin 
+                    rState <= stWtData;
+                end
             end
             stWtEnd: begin
-                if (rDataCnt == 4'd9 && rBaudEnd == 1'b1) rState <= stIdle;
-                else rState <= stWtEnd;
+                if (rDataCnt == 4'd9 && rBaudEnd == 1'b1) begin 
+                    rState <= stIdle;
+                end
+                else begin 
+                    rState <= stWtEnd;
+                end
             end
             default: begin
                 rState <= stIdle;
@@ -117,8 +127,11 @@ always @(posedge Clk) begin
         rTxFfRdEn <= 2'b00;
     end else begin
         rTxFfRdEn[1] <= rTxFfRdEn[0];
-        if (rState == stRdReq) rTxFfRdEn[0] <= 1'b1;
-        else rTxFfRdEn[0] <= 1'b0;
+        if (rState == stRdReq) begin 
+            rTxFfRdEn[0] <= 1'b1;
+        end else begin 
+            rTxFfRdEn[0] <= 1'b0;
+        end
     end
 end
 

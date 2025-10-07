@@ -1,1 +1,1 @@
-UART Implementaion on Tang Nano 4K
+UART Implementaion on FPGA (Tang Nano 4K Development Board)
