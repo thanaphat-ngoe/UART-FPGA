@@ -1,23 +1,17 @@
 module TxUART (
-    input        Clk,
-    input        RstB,           // Note: treated as active-HIGH reset in this code
-    input        TxFfEmpty,
-    input  [7:0] TxFfRdData,
-    output       TxFfRdEn,
-    output       SerialDataOut
+    input wire Clk,
+    input wire RstB,           // Note: treated as active-HIGH reset in this code
+    input wire TxFfEmpty,
+    input wire [7:0] TxFfRdData,
+    output wire TxFfRdEn,
+    output wire SerialDataOut
 );
-
-// ----------------------------------------
-// Output assignment
-// ----------------------------------------
-assign TxFfRdEn      = rTxFfRdEn[0];
-assign SerialDataOut = rSerialData[0];
 
 // ----------------------------------------
 // Parameter declaration
 // ----------------------------------------
-parameter integer cbaudCnt = 108;
-parameter integer cdataCnt = 0;
+parameter [9:0] cbaudCnt = 10'd434;
+parameter [3:0] cdataCnt = 4'd0;
 
 parameter [1:0] stIdle   = 2'b00;
 parameter [1:0] stRdReq  = 2'b01;
@@ -46,7 +40,7 @@ always @(posedge Clk) begin
         if (rBaudCnt == 10'd1) begin
             rBaudCnt <= cbaudCnt;
         end else begin 
-            brBaudCnt <= rBaudCnt - 10'd1;
+            rBaudCnt <= rBaudCnt - 10'd1;
         end
     end
 end
@@ -63,9 +57,9 @@ end
 // rDataCnt
 always @(posedge Clk) begin
     if (RstB == 1'b1) begin
-        rDataCnt <= cdataCnt[3:0];
+        rDataCnt <= cdataCnt;
     end else if (rTxFfRdEn[1] == 1'b1) begin
-        rDataCnt <= cdataCnt[3:0];
+        rDataCnt <= cdataCnt;
     end else if (rBaudEnd == 1'b1 && rDataCnt != 4'd9) begin
         rDataCnt <= rDataCnt + 4'd1;
     end
@@ -93,8 +87,11 @@ always @(posedge Clk) begin
     end else begin
         case (rState)
             stIdle: begin
-                if (TxFfEmpty == 1'b0) rState <= stRdReq;
-                else rState <= stIdle;
+                if (TxFfEmpty == 1'b0) begin
+                    rState <= stRdReq;
+                end else begin 
+                    rState <= stIdle;
+                end
             end
             stRdReq: begin
                 rState <= stWtData;
@@ -134,5 +131,11 @@ always @(posedge Clk) begin
         end
     end
 end
+
+// ----------------------------------------
+// Output assignment
+// ----------------------------------------
+assign TxFfRdEn = rTxFfRdEn[0];
+assign SerialDataOut = rSerialData[0];
 
 endmodule
